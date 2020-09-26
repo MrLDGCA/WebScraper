@@ -1,8 +1,8 @@
 #!/bin/bash
 # Author	: L. D. G. Charith Akalanka
-# ID		: 10518707
-# Purpose	: To download the "picture of the day" from space.com, for any single date
-#		  or a range of dates
+# Date		: 2020-01-29
+# Purpose	: 
+#	To download the "picture of the day" from space.com, for any single date or a range of dates
 
 
 
