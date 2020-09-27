@@ -6,30 +6,30 @@
 
 
 
-# This function downloads the .html pages
+# This function downloads all the .html pages
 siteGrabber(){
 
 	# Create a temp folder to hold the scrap files
-	[ -d temp ] || mkdir temp
+	[ -d .temp ] || mkdir .temp
 
 	# Download the "Image of the day" page
-	if [ ! -e ./temp/34-image-day.html ]; then
+	if [ ! -e ./.temp/34-image-day.html ]; then
 		echo -e "_____ Searching Space.com _____\n"
-		wget -q https://www.space.com/34-image-day.html -P temp/
+		wget -q https://www.space.com/34-image-day.html -P .temp/
 
 	# Identifying the number of pages
-		pageCount=$(grep "^Page 1 of " ./temp/34-image-day.html | sed "s/ /\n/g" | grep ":$" | sed "s/://g")
+		pageCount=$(grep "^Page 1 of " ./.temp/34-image-day.html | sed "s/ /\n/g" | grep ":$" | sed "s/://g")
 
 	# Downloading all the pages
 		for ((i=1; i<=$pageCount; i++)); do
-			[ -e ./temp/$i.html ] || wget -q https://www.space.com/34-image-day/$i.html -P temp/
+			[ -e ./.temp/$i.html ] || wget -q https://www.space.com/34-image-day/$i.html -P .temp/
 		done
 	fi
 }
 
 # This function deletes the /temp folder
 cleanTemp(){
-	rm -r ./temp
+	rm -r ./.temp
 }
 
 # This function download the image, but only if its not already in the folder
@@ -66,12 +66,12 @@ isolate(){
 	echo -e "\t\t$searchDay, $searchMonth $searchDate, $searchYear"
 	echo
 
-	# Search all .html files for entries with the matching date
-	# save it to section.txt
+	# Search all .html files for the page with the searching date
+	# save the body of the page to section.txt
 
-	grep "$searchDay[.,] $searchMonth $searchDate[.,] $searchYear" ./temp/*.html | sed "s/<div\ id=\"article-body\"\ class=\"text-copy\ bodyCopy\ auto\">/<div\ id=\"article-body\"\ class=\"text-copy\ bodyCopy\ auto\">\n/g" | grep "$searchDay[.,] $searchMonth $searchDate[.,] $searchYear" > temp/section.txt
+	grep "$searchMonth $searchDate[.,] $searchYear" ./.temp/*.html | sed "s/<div\ id=\"article-body\"\ class=\"text-copy\ bodyCopy\ auto\">/<div\ id=\"article-body\"\ class=\"text-copy\ bodyCopy\ auto\">\n/g" | grep "$searchMonth $searchDate[.,] $searchYear" > .temp/section.txt
 
-	if [ ! -s ./temp/section.txt ]; then
+	if [ ! -s ./.temp/section.txt ]; then
 		noImage=1
 		echo -e "==========||   No picture found   ||==========\n"
 
@@ -79,11 +79,11 @@ isolate(){
 	# Isolate the image name from section.txt
 		noImage=0
 
-		title=$(sed "s/<h/\n<h/g" ./temp/section.txt | grep -m1 "$searchDay[.,] $searchMonth $searchDate[.,] $searchYear" | sed "s/<\/h/\n<\/h/g" | grep "<h" | sed "s/<\/\?[^>]\+>//g" | sed "s/&nbsp;//g ; s/'//g" )
+		title=$(sed "s/<h/\n<h/g" ./.temp/section.txt | grep -m1 "$searchMonth $searchDate[.,] $searchYear: </strong>"  | sed "s/<\/h/\n<\/h/g" | grep "<h" | sed "s/<\/\?[^>]\+>//g" | sed "s/&nbsp;//g ; s/'//g" )
 		#echo "Title: $title"
 
 		# Isolate the image url from section.txt
-		imgURL=$(sed "s/data-original-mos=/\ndata-original-mos=/g" ./temp/section.txt | grep -m1 "$searchDay[.,] $searchMonth $searchDate[.,] $searchYear" | sed "s/\ /\n/g" | grep -m1 "data-original-mos" | sed "s/\"\ /\"\n/g" | grep "data-original-mos" | sed "s/=/\n/g" | grep "^\"" | sed "s/\"//g")
+		imgURL=$(sed "s/data-original-mos=/\ndata-original-mos=/g" ./.temp/section.txt | grep -m1 "$searchMonth $searchDate[.,] $searchYear: </strong>" | sed "s/\ /\n/g" | grep -m1 "data-original-mos" | sed "s/\"\ /\"\n/g" | grep "data-original-mos" | sed "s/=/\n/g" | grep "^\"" | sed "s/\"//g")
 		#echo "URL: $imgURL"
 
 		# Isolate the file format from the URL (jpg, gif)
@@ -94,11 +94,11 @@ isolate(){
 		#echo "File name: $imgName"
 
 		# Isolate the image description from section.txt
-		imgDesc=$(sed "s/<strong>/\n<strong>/g" ./temp/section.txt | grep -m1 "$searchDay[.,] $searchMonth $searchDate[.,] $searchYear" | sed "s/<br>/<\/p>/g ; s/<\/strong>/<\/strong>\n/g" | grep -m1 "</p>" | sed "s/<\/p>/<\/p>\n/g" | grep -m1 "<\/p>" | sed "s/<\/\?[^>]\+>//g" | sed "s/&mdash;/-/g ; s/&nbsp;/\n/g" )
+		imgDesc=$(sed "s/<strong>/\n<strong>/g" ./.temp/section.txt | grep -m1 "$searchMonth $searchDate[.,] $searchYear: </strong>" | sed "s/<br>/<\/p>/g ; s/<\/strong>/<\/strong>\n/g" | grep -m1 "</p>" | sed "s/<\/p>/<\/p>\n/g" | grep -m1 "<\/p>" | sed "s/<\/\?[^>]\+>//g" | sed "s/&mdash;/-/g ; s/&nbsp;/\n/g" )
 		#echo "Desc: $imgDesc"
 
 		# Isolate the image credits
-		imgCredit=$( sed "s/(Image\ credit:/\n(Image\ credit:/g" ./temp/section.txt | grep -m1 "$searchDay[.,] $searchMonth $searchDate[.,] $searchYear" | sed "s/<\/span>/\n<\/span>/g" | grep -m1 "Image credit" | sed "s/<\/\?[^>]\+>//g" | sed "s/(Image\ credit://g ; s/)//g ; s/\&amp\;/\&/g")
+		imgCredit=$( sed "s/(Image\ credit:/\n(Image\ credit:/g" ./.temp/section.txt | grep -m1 "$searchMonth $searchDate[.,] $searchYear: </strong>" | sed "s/<\/span>/\n<\/span>/g" | grep -m1 "Image credit" | sed "s/<\/\?[^>]\+>//g" | sed "s/(Image\ credit://g ; s/)//g ; s/\&amp\;/\&/g")
 		#echo "Credit: $imgCredit"
 
 	fi
@@ -205,7 +205,7 @@ else
 		esac
 		done
 		# Delete the temp folder before closing the script
-		cleanTemp
+		#cleanTemp
 	fi
 fi
 
